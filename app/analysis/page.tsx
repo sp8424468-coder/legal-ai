@@ -1,69 +1,72 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function AnalysisPage() {
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const runAnalysis = async () => {
-      const text = localStorage.getItem("docText");
-
-      if (!text) {
-        alert("No document found bro 😄");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          body: JSON.stringify({ text }),
-        });
-
-        const data = await res.json();
-        setResult(data.result);
-      } catch (err) {
-        console.error("Analysis error:", err);
-        alert("Analysis failed bro");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    runAnalysis();
-  }, []);
-
-  if (loading) {
-    return <h2 className="p-10">⏳ Analyzing document...</h2>;
-  }
-
-  if (!result) {
-    return <h2 className="p-10">❌ No result found</h2>;
-  }
+export default function HomePage() {
+  const router = useRouter();
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold mb-4">📊 Analysis Result</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
 
-      <h2 className="text-lg font-bold">
-        Risk Level: {result.risk_level}
-      </h2>
-
-      {result.clauses.map((c: any, i: number) => (
-        <div
-          key={i}
-          className={`p-3 mt-3 border rounded ${
-            c.risk ? "bg-red-200" : "bg-green-200"
-          }`}
+      {/* Navbar */}
+      <div className="flex justify-between items-center px-10 py-5 bg-white shadow">
+        <h1 className="text-xl font-bold">⚖️ Legal AI</h1>
+        <button
+          onClick={() => router.push("/upload")}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
-          <p><b>Original:</b> {c.original}</p>
-          <p><b>Simple:</b> {c.simple}</p>
-          {c.risk && <p>⚠️ {c.explanation}</p>}
-        </div>
-      ))}
+          Get Started
+        </button>
+      </div>
 
-      <h3 className="mt-4 font-bold">Summary</h3>
-      <p>{result.summary}</p>
+      {/* Hero */}
+      <div className="text-center mt-20 px-6">
+        <h1 className="text-4xl font-bold mb-4">
+          Understand Legal Documents Instantly
+        </h1>
+
+        <p className="text-gray-600 max-w-xl mx-auto">
+          Upload contracts and let AI simplify complex terms,
+          detect risks, and give clear insights.
+        </p>
+
+        <button
+          onClick={() => router.push("/upload")}
+          className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg text-lg"
+        >
+          Start Analyzing 🚀
+        </button>
+      </div>
+
+      {/* Features */}
+      <div className="mt-20 px-10 grid md:grid-cols-3 gap-6">
+
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h3 className="font-bold text-lg">📄 Upload Documents</h3>
+          <p className="text-gray-600 text-sm mt-2">
+            Supports PDF & DOCX files
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h3 className="font-bold text-lg">🤖 AI Analysis</h3>
+          <p className="text-gray-600 text-sm mt-2">
+            Converts legal language into simple terms
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h3 className="font-bold text-lg">⚠️ Risk Detection</h3>
+          <p className="text-gray-600 text-sm mt-2">
+            Identifies risky clauses instantly
+          </p>
+        </div>
+
+      </div>
+
+      {/* Footer */}
+      <div className="mt-20 text-center text-gray-500 pb-6">
+        © 2026 Legal AI Analyzer 🚀
+      </div>
     </div>
   );
 }
