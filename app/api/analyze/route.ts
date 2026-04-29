@@ -1,4 +1,5 @@
 import { openai } from "@/lib/openai";
+import { setDocument } from "@/lib/documentStore"; // ← ADD THIS IMPORT
 
 export async function POST(req: Request) {
   try {
@@ -49,7 +50,7 @@ ${text}
 
     let resultText = response.choices[0].message.content || "";
 
-    // 🔥 Remove ```json ``` if AI adds it
+    // Remove ```json ``` if AI adds it
     resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
 
     let parsedResult;
@@ -63,6 +64,8 @@ ${text}
         { status: 500 }
       );
     }
+
+    setDocument(parsedResult); // ← ADD THIS LINE (stores result for chatbot)
 
     return Response.json({ result: parsedResult });
 
