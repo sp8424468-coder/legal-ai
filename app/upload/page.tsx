@@ -34,7 +34,6 @@ export default function Home() {
   const [previewTranslating, setPreviewTranslating] = useState(false);
   const [previewPlaying, setPreviewPlaying] = useState(false);
 
-  // 💳 NEW STATE
   const [paid, setPaid] = useState(false);
 
   const router = useRouter();
@@ -72,7 +71,7 @@ export default function Home() {
     }
   };
 
-  // 📄 Upload (PAYMENT LOCK ADDED)
+  // 📄 Upload
   const upload = async () => {
     if (!paid) {
       alert("⚠️ Please complete payment first");
@@ -107,7 +106,7 @@ export default function Home() {
     }
   };
 
-  // 🤖 Analyze (PAYMENT LOCK ADDED)
+  // 🤖 Analyze
   const analyze = () => {
     if (!paid) {
       alert("⚠️ Payment required");
@@ -126,57 +125,109 @@ export default function Home() {
   const D = dark;
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center ${
-        D ? "bg-[#070b14]" : "bg-[#eef2ff]"
-      }`}
-    >
-      <div className="max-w-xl w-full p-6">
+    <div className={`min-h-screen relative overflow-x-hidden ${D ? "bg-[#070b14]" : "bg-[#eef2ff]"}`}>
 
-        {/* 💳 PAYMENT BUTTON */}
-        {!paid && (
-          <button
-            onClick={handlePayment}
-            className="w-full mb-5 py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg"
-          >
-            💳 Pay ₹5 to Unlock
-          </button>
-        )}
+      {/* 🌌 Background Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[120px] bg-indigo-700 opacity-25" />
+        <div className="absolute top-1/2 -right-40 w-[400px] h-[400px] rounded-full blur-[100px] bg-violet-700 opacity-20" />
+        <div className="absolute -bottom-32 left-1/2 w-[400px] h-[400px] rounded-full blur-[100px] bg-cyan-700 opacity-15" />
+      </div>
 
-        {/* 🔒 LOCK UI */}
-        <div className={!paid ? "opacity-40 pointer-events-none" : ""}>
+      {/* 🔝 Navbar */}
+      <nav className="relative z-10 flex justify-between px-8 py-5 border-b border-white/10">
+        <h1 className="text-white font-bold text-xl">
+          Lex<span className="text-indigo-400">Simple</span>
+        </h1>
 
-          {/* Upload */}
-          <input
-            type="file"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) setFile(f);
-            }}
-          />
+        <button
+          onClick={() => {
+            setDark(!D);
+            localStorage.setItem("darkMode", String(!D));
+          }}
+          className="text-white"
+        >
+          {D ? "☀️" : "🌙"}
+        </button>
+      </nav>
 
-          <div className="flex gap-3 mt-4">
+      {/* 🧠 Heading */}
+      <div className="text-center mt-16 mb-10">
+        <h1 className="text-4xl font-black text-white mb-3">
+          Upload Legal Document
+        </h1>
+        <p className="text-gray-400">
+          Get instant AI insights and risk detection
+        </p>
+      </div>
+
+      {/* 💎 Main Card */}
+      <div className="relative z-10 max-w-xl mx-auto px-6 pb-20">
+        <div className="rounded-2xl border p-7 bg-white/[0.04] border-white/[0.08] backdrop-blur-2xl">
+
+          {/* 💳 PAYMENT */}
+          {!paid && (
             <button
-              onClick={upload}
-              className="flex-1 bg-blue-600 text-white p-2 rounded"
+              onClick={handlePayment}
+              className="w-full mb-6 py-3 rounded-xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
             >
-              Upload
+              💳 Pay ₹5 to Unlock
             </button>
-
-            <button
-              onClick={analyze}
-              className="flex-1 bg-indigo-600 text-white p-2 rounded"
-            >
-              Analyze
-            </button>
-          </div>
-
-          {/* Preview */}
-          {preview && (
-            <div className="mt-5 bg-gray-100 p-3 rounded">
-              <pre>{preview}</pre>
-            </div>
           )}
+
+          {/* 🔒 LOCK */}
+          <div className={!paid ? "opacity-40 pointer-events-none" : ""}>
+
+            {/* 📄 Upload Box */}
+            <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-400 transition">
+              <input
+                type="file"
+                className="hidden"
+                id="fileInput"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setFile(f);
+                }}
+              />
+
+              <label htmlFor="fileInput" className="cursor-pointer">
+                <div className="text-3xl mb-2">📄</div>
+                <p className="text-gray-300 font-medium">
+                  {file ? file.name : "Click to upload file"}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  PDF / DOCX supported
+                </p>
+              </label>
+            </div>
+
+            {/* 🔘 Buttons */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={upload}
+                className="flex-1 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/15 text-white border border-white/10"
+              >
+                {loading ? "Processing..." : "Upload"}
+              </button>
+
+              <button
+                onClick={analyze}
+                className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-500 to-violet-500 text-white"
+              >
+                Analyze ✦
+              </button>
+            </div>
+
+            {/* 📄 Preview */}
+            {preview && (
+              <div className="mt-6 bg-white/5 border border-white/10 p-4 rounded-xl">
+                <h3 className="text-white font-semibold mb-2">Preview</h3>
+                <pre className="text-gray-300 text-sm whitespace-pre-wrap">
+                  {preview}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
