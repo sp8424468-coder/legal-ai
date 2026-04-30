@@ -43,6 +43,60 @@ export default function Home() {
     if (saved !== null) setDark(saved === "true");
   }, []);
 
+  // ── Step 2: Translate preview function ──
+  const translatePreview = async () => {
+    if (!preview) return;
+
+    if (previewLang.label === "English") {
+      setTranslatedPreview(preview);
+      return;
+    }
+
+    setPreviewTranslating(true);
+
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: preview,
+          language: previewLang.label,
+        }),
+      });
+
+      const data = await res.json();
+      setTranslatedPreview(data.translated || preview);
+    } catch {
+      setTranslatedPreview(preview);
+    }
+
+    setPreviewTranslating(false);
+  };
+
+  // ── Step 3: Read aloud function with full language code mapping ──
+  const readPreview = () => {
+    if (!translatedPreview && !preview) return;
+
+    const textToRead = translatedPreview || preview;
+
+    window.speechSynthesis.cancel();
+
+    if (previewPlaying) {
+      setPreviewPlaying(false);
+      return;
+    }
+
+    const speech = new SpeechSynthesisUtterance(textToRead);
+    speech.lang = previewLang.code; // uses full language code e.g. hi-IN, ta-IN
+    speech.rate = 0.95;
+
+    speech.onstart = () => setPreviewPlaying(true);
+    speech.onend   = () => setPreviewPlaying(false);
+    speech.onerror = () => setPreviewPlaying(false);
+
+    window.speechSynthesis.speak(speech);
+  };
+
   // 💳 PAYMENT FUNCTION
   const handlePayment = async () => {
     try {
@@ -98,7 +152,7 @@ export default function Home() {
       setText(data.text || "");
       const p = data.preview || "No preview available";
       setPreview(p);
-      setTranslatedPreview(p);
+      setTranslatedPreview(p); // seed translated with raw on fresh upload
     } catch {
       alert("Upload failed");
     } finally {
@@ -218,15 +272,84 @@ export default function Home() {
               </button>
             </div>
 
-            {/* 📄 Preview */}
+            {/* ── Step 4: Updated Preview Section ── */}
             {preview && (
               <div className="mt-6 bg-white/5 border border-white/10 p-4 rounded-xl">
-                <h3 className="text-white font-semibold mb-2">Preview</h3>
-                <pre className="text-gray-300 text-sm whitespace-pre-wrap">
-                  {preview}
+
+                {/* Preview header with controls */}
+                <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+                  <h3 className={`font-semibold ${D ? "text-white" : "text-gray-900"}`}>
+                    Preview
+                  </h3>
+
+                  <div className="flex gap-2 items-center flex-wrap">
+
+                    {/* Language Selector */}
+                    <select
+                      value={previewLang.label}
+                      onChange={(e) => {
+                        const found = LANGUAGES.find((l) => l.label === e.target.value);
+                        if (found) setPreviewLang(found);
+                      }}
+                      className={`text-xs px-2 py-1.5 rounded-lg border outline-none cursor-pointer ${
+                        D
+                          ? "bg-white/[0.08] border-white/[0.12] text-gray-300"
+                          : "bg-white border-indigo-200 text-gray-700"
+                      }`}
+                    >
+                      {LANGUAGES.map((l) => (
+                        <option key={l.label} value={l.label}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Translate Button */}
+                    <button
+                      onClick={translatePreview}
+                      disabled={previewTranslating}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition ${
+                        D
+                          ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30"
+                          : "bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100"
+                      }`}
+                    >
+                      {previewTranslating ? "..." : "Translate"}
+                    </button>
+
+                    {/* Read Aloud Button */}
+                    <button
+                      onClick={readPreview}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition ${
+                        previewPlaying
+                          ? "bg-indigo-500 text-white border-indigo-500"
+                          : D
+                          ? "bg-white/[0.08] border-white/[0.12] text-gray-300 hover:bg-white/[0.12]"
+                          : "bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-100"
+                      }`}
+                    >
+                      {previewPlaying ? "⏹ Stop" : "🔊 Read"}
+                    </button>
+
+                  </div>
+                </div>
+
+                {/* Step 5: Show translated text instead of raw */}
+                <pre className={`text-sm whitespace-pre-wrap leading-relaxed ${D ? "text-gray-300" : "text-gray-700"}`}>
+                  {previewTranslating
+                    ? "Translating..."
+                    : translatedPreview || preview}
                 </pre>
+
+                {/* Language indicator when not English */}
+                {previewLang.label !== "English" && translatedPreview && !previewTranslating && (
+                  <p className="text-xs text-indigo-400 font-medium mt-2">
+                    · Translated to {previewLang.label}
+                  </p>
+                )}
               </div>
             )}
+
           </div>
         </div>
       </div>

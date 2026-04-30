@@ -1,4 +1,6 @@
-import PDFDocument from "pdfkit";
+export const runtime = "nodejs";
+
+import PDFDocument from "pdfkit/js/pdfkit.standalone";
 import { getDocument } from "@/lib/documentStore";
 
 export async function GET() {
@@ -14,7 +16,7 @@ export async function GET() {
     const doc = new PDFDocument();
     const chunks: Uint8Array[] = [];
 
-    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("data", (chunk: Uint8Array) => chunks.push(chunk));
 
     const endPromise = new Promise<Buffer>((resolve) => {
       doc.on("end", () => {
@@ -30,10 +32,10 @@ export async function GET() {
     doc.fontSize(14).text(`Overall Risk Level: ${risk_level}`);
     doc.moveDown();
 
-    // 🔹 Original Text (Preview)
+    // 🔹 Original Text
     doc.fontSize(16).text("Original Document (Preview):");
     doc.moveDown(0.5);
-    doc.fontSize(10).text(text.slice(0, 2000)); // limit for readability
+    doc.fontSize(10).text(text.slice(0, 2000));
     doc.moveDown();
 
     // 🔹 Simplified Clauses
@@ -60,7 +62,7 @@ export async function GET() {
 
     const pdfBuffer = await endPromise;
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": "attachment; filename=legal-analysis.pdf",

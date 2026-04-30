@@ -145,101 +145,204 @@ export default function AnalysisPage() {
   };
 
   const D = dark;
-
   const toggleDark = () => { setDark(!D); localStorage.setItem("darkMode", String(!D)); };
+
+  // ── DARK theme tokens (from screenshot) ──
+  // bg: #080d1a deep navy, blobs: indigo + cyan, text: white
+  // LIGHT theme tokens: bg: #f0f4ff soft lavender-white, text: #0f172a
 
   // ── Loading ──
   if (loading) return (
-    <div className={`min-h-screen flex items-center justify-center ${D ? "bg-[#070b14]" : "bg-[#eef2ff]"}`}
-      style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
-      <div className={`p-10 rounded-2xl border text-center ${D ? "bg-white/[0.04] border-white/[0.08]" : "bg-white border-gray-200 shadow-xl"}`}>
-        <div className="w-14 h-14 mx-auto mb-5 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
-        <p className={`font-bold text-lg ${D ? "text-white" : "text-gray-900"}`}>Analyzing your document</p>
-        <p className={`text-sm mt-1 ${D ? "text-gray-500" : "text-gray-400"}`}>AI is reading every clause...</p>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        fontFamily: "'Sora','DM Sans',sans-serif",
+        background: D ? "#080d1a" : "#f0f4ff",
+      }}
+    >
+      {/* ambient blobs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div style={{ position:"absolute", top:"-120px", left:"-120px", width:"520px", height:"520px", borderRadius:"50%", background: D ? "radial-gradient(circle,#3b3fd8 0%,transparent 70%)" : "radial-gradient(circle,#818cf8 0%,transparent 70%)", opacity: D ? 0.25 : 0.15, filter:"blur(40px)" }} />
+        <div style={{ position:"absolute", bottom:"-80px", right:"-80px", width:"420px", height:"420px", borderRadius:"50%", background: D ? "radial-gradient(circle,#06b6d4 0%,transparent 70%)" : "radial-gradient(circle,#67e8f9 0%,transparent 70%)", opacity: D ? 0.2 : 0.12, filter:"blur(40px)" }} />
       </div>
+      <div style={{
+        padding:"40px 48px", borderRadius:"24px", textAlign:"center",
+        background: D ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.8)",
+        border: D ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(99,102,241,0.2)",
+        backdropFilter:"blur(20px)",
+        boxShadow: D ? "0 0 60px rgba(99,102,241,0.15)" : "0 8px 40px rgba(99,102,241,0.12)",
+      }}>
+        {/* Spinning ring matching screenshot style */}
+        <div style={{ width:56, height:56, margin:"0 auto 20px", borderRadius:"50%", border:`3px solid ${D ? "rgba(255,255,255,0.08)" : "rgba(99,102,241,0.15)"}`, borderTop:"3px solid #6366f1", animation:"spin 0.9s linear infinite" }} />
+        <p style={{ fontWeight:800, fontSize:18, color: D ? "#fff" : "#0f172a", letterSpacing:"-0.3px" }}>Analyzing your document</p>
+        <p style={{ fontSize:13, marginTop:6, color: D ? "#64748b" : "#94a3b8" }}>AI is reading every clause...</p>
+      </div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   if (!result) return (
-    <div className={`min-h-screen flex items-center justify-center ${D ? "bg-[#070b14]" : "bg-[#eef2ff]"}`}>
-      <p className="text-red-400 font-bold">❌ No result found</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: D ? "#080d1a" : "#f0f4ff" }}>
+      <p style={{ color:"#f87171", fontWeight:700 }}>❌ No result found</p>
     </div>
   );
 
-  const riskColor = result.risk_level === "High" ? "text-red-400 bg-red-500/15 border-red-500/30"
-    : result.risk_level === "Medium" ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
-    : "text-emerald-400 bg-emerald-500/15 border-emerald-500/30";
+  const riskColor = result.risk_level === "High"
+    ? { text:"#f87171", bg:"rgba(239,68,68,0.12)", border:"rgba(239,68,68,0.3)", dot:"#f87171" }
+    : result.risk_level === "Medium"
+    ? { text:"#fbbf24", bg:"rgba(245,158,11,0.12)", border:"rgba(245,158,11,0.3)", dot:"#fbbf24" }
+    : { text:"#34d399", bg:"rgba(52,211,153,0.12)", border:"rgba(52,211,153,0.3)", dot:"#34d399" };
 
-  const riskDot = result.risk_level === "High" ? "bg-red-400" : result.risk_level === "Medium" ? "bg-amber-400" : "bg-emerald-400";
+  // Shared style helpers
+  const cardStyle = (extra?: object): object => ({
+    borderRadius: 20,
+    border: D ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(99,102,241,0.15)",
+    background: D ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.75)",
+    backdropFilter: "blur(16px)",
+    boxShadow: D ? "0 4px 32px rgba(0,0,0,0.3)" : "0 4px 24px rgba(99,102,241,0.08)",
+    padding: "24px 28px",
+    ...extra,
+  });
+
+  const bg       = D ? "#080d1a" : "#f0f4ff";
+  const textPri  = D ? "#f1f5f9" : "#0f172a";
+  const textSec  = D ? "#64748b" : "#64748b";
+  const textMid  = D ? "#94a3b8" : "#475569";
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}
-      className={`min-h-screen transition-colors duration-500 ${D ? "bg-[#070b14]" : "bg-[#eef2ff]"}`}>
+    <div style={{ fontFamily:"'Sora','DM Sans',sans-serif", minHeight:"100vh", background: bg, transition:"background 0.4s" }}>
 
-      {/* Ambient blobs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className={`absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[120px] ${D ? "opacity-20 bg-indigo-700" : "opacity-15 bg-indigo-400"}`} />
-        <div className={`absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] ${D ? "opacity-15 bg-violet-700" : "opacity-10 bg-violet-400"}`} />
-        <div className={`absolute inset-0 ${D ? "opacity-[0.025]" : "opacity-[0.035]"}`}
-          style={{ backgroundImage: "linear-gradient(#6366f1 1px,transparent 1px),linear-gradient(90deg,#6366f1 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
+      {/* ── Ambient background blobs (matching screenshot) ── */}
+      <div style={{ position:"fixed", inset:0, pointerEvents:"none", overflow:"hidden", zIndex:0 }}>
+        <div style={{ position:"absolute", top:"-150px", left:"-150px", width:"600px", height:"600px", borderRadius:"50%", background: D ? "radial-gradient(circle,#3730a3 0%,transparent 65%)" : "radial-gradient(circle,#a5b4fc 0%,transparent 65%)", opacity: D ? 0.35 : 0.2, filter:"blur(1px)" }} />
+        <div style={{ position:"absolute", bottom:"-100px", right:"-100px", width:"500px", height:"500px", borderRadius:"50%", background: D ? "radial-gradient(circle,#0e7490 0%,transparent 65%)" : "radial-gradient(circle,#67e8f9 0%,transparent 65%)", opacity: D ? 0.25 : 0.15, filter:"blur(1px)" }} />
+        <div style={{ position:"absolute", top:"40%", right:"20%", width:"300px", height:"300px", borderRadius:"50%", background: D ? "radial-gradient(circle,#7c3aed 0%,transparent 65%)" : "radial-gradient(circle,#c4b5fd 0%,transparent 65%)", opacity: D ? 0.2 : 0.12, filter:"blur(1px)" }} />
+        {/* Subtle grid */}
+        <div style={{ position:"absolute", inset:0, backgroundImage:`linear-gradient(${D?"rgba(99,102,241,0.04)":"rgba(99,102,241,0.06)"} 1px,transparent 1px),linear-gradient(90deg,${D?"rgba(99,102,241,0.04)":"rgba(99,102,241,0.06)"} 1px,transparent 1px)`, backgroundSize:"64px 64px" }} />
       </div>
 
-      {/* Navbar */}
-      <nav className={`relative z-20 flex items-center justify-between px-6 md:px-10 py-5 border-b sticky top-0 backdrop-blur-xl ${D ? "border-white/[0.06] bg-[#070b14]/80" : "border-black/[0.07] bg-[#eef2ff]/80"}`}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/30">⚖</div>
-          <span className={`text-xl font-black tracking-tight ${D ? "text-white" : "text-gray-900"}`}>
-            Lex<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-500">Simple</span>
+      {/* ── Navbar (matches screenshot: logo left, badge + toggle right) ── */}
+      <nav style={{
+        position:"sticky", top:0, zIndex:20,
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"0 40px", height:68,
+        background: D ? "rgba(8,13,26,0.85)" : "rgba(240,244,255,0.85)",
+        backdropFilter:"blur(20px)",
+        borderBottom: D ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(99,102,241,0.12)",
+      }}>
+        {/* Logo — matches screenshot style exactly */}
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{
+            width:38, height:38, borderRadius:12,
+            background:"linear-gradient(135deg,#6366f1,#7c3aed)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:18, boxShadow:"0 0 20px rgba(99,102,241,0.5)",
+          }}>⚖</div>
+          <span style={{ fontSize:22, fontWeight:900, letterSpacing:"-0.5px", color: D ? "#fff" : "#0f172a" }}>
+            Lex<span style={{ background:"linear-gradient(90deg,#818cf8,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Simple</span>
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${riskColor}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${riskDot}`} />
+
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          {/* Risk badge — pill style from screenshot */}
+          <span style={{
+            display:"flex", alignItems:"center", gap:6,
+            fontSize:12, fontWeight:700, letterSpacing:"0.3px",
+            padding:"6px 14px", borderRadius:999,
+            background: riskColor.bg, border:`1px solid ${riskColor.border}`, color: riskColor.text,
+          }}>
+            <span style={{ width:7, height:7, borderRadius:"50%", background:riskColor.dot, boxShadow:`0 0 6px ${riskColor.dot}` }} />
             {result.risk_level} Risk
           </span>
-          <button onClick={toggleDark}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${D ? "bg-white/[0.07] hover:bg-white/[0.12] text-yellow-300" : "bg-black/[0.06] hover:bg-black/[0.1] text-slate-600"}`}>
+          {/* Dark mode toggle */}
+          <button onClick={toggleDark} style={{
+            width:42, height:42, borderRadius:12, border:"none", cursor:"pointer", fontSize:18,
+            background: D ? "rgba(255,255,255,0.07)" : "rgba(99,102,241,0.1)",
+            transition:"all 0.2s",
+          }}>
             {D ? "☀️" : "🌙"}
           </button>
         </div>
       </nav>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-10 pb-24">
+      {/* ── Main Content ── */}
+      <div style={{ position:"relative", zIndex:1, maxWidth:860, margin:"0 auto", padding:"48px 24px 120px" }}>
 
-        <div className="mb-8">
-          <h1 className={`text-3xl font-black tracking-tight ${D ? "text-white" : "text-gray-900"}`}>📊 Analysis Result</h1>
-          <p className={`text-sm mt-1 ${D ? "text-gray-500" : "text-gray-400"}`}>{result.clauses.length} clauses analyzed · {result.clauses.filter(c => c.risk).length} flagged as risky</p>
+        {/* Page header — hero style from screenshot */}
+        <div style={{ marginBottom:40, textAlign:"center" }}>
+          {/* Badge pill like screenshot */}
+          <div style={{
+            display:"inline-flex", alignItems:"center", gap:8,
+            padding:"6px 16px", borderRadius:999, marginBottom:20,
+            background: D ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.08)",
+            border: D ? "1px solid rgba(99,102,241,0.25)" : "1px solid rgba(99,102,241,0.2)",
+          }}>
+            <span style={{ width:7, height:7, borderRadius:"50%", background:"#34d399", boxShadow:"0 0 6px #34d399" }} />
+            <span style={{ fontSize:12, fontWeight:600, color: D ? "#a5b4fc" : "#4f46e5" }}>AI-Powered Legal Intelligence</span>
+          </div>
+
+          <h1 style={{
+            fontSize:"clamp(28px,4vw,42px)", fontWeight:900, letterSpacing:"-1px", lineHeight:1.15,
+            color: D ? "#fff" : "#0f172a", marginBottom:10,
+          }}>
+            Analysis{" "}
+            <span style={{ background:"linear-gradient(90deg,#818cf8 0%,#22d3ee 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+              Results
+            </span>
+          </h1>
+          <p style={{ fontSize:15, color:textSec }}>
+            {result.clauses.length} clauses analyzed · <span style={{ color: riskColor.text, fontWeight:600 }}>{result.clauses.filter(c => c.risk).length} flagged as risky</span>
+          </p>
         </div>
 
-        {/* Clauses */}
-        <div className="space-y-3 mb-8">
+        {/* ── Clauses ── */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:32 }}>
           {result.clauses.map((c, i) => (
-            <div key={i} className={`rounded-xl border p-5 transition-all ${
-              c.risk
-                ? D ? "bg-red-500/[0.06] border-red-500/25 hover:border-red-500/40" : "bg-red-50 border-red-200 hover:border-red-300"
-                : D ? "bg-white/[0.03] border-white/[0.07] hover:border-white/[0.12]" : "bg-white border-gray-200 hover:border-gray-300"
-            }`}>
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${D ? "bg-white/[0.08] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+            <div key={i} style={{
+              ...cardStyle(),
+              border: c.risk
+                ? D ? "1px solid rgba(239,68,68,0.25)" : "1px solid rgba(239,68,68,0.2)"
+                : D ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(99,102,241,0.12)",
+              background: c.risk
+                ? D ? "rgba(239,68,68,0.05)" : "rgba(254,226,226,0.5)"
+                : D ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.7)",
+              transition:"border-color 0.2s, transform 0.2s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.transform="translateY(-1px)")}
+            onMouseLeave={e => (e.currentTarget.style.transform="translateY(0)")}
+            >
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, marginBottom:12 }}>
+                <span style={{
+                  fontSize:11, fontWeight:700, letterSpacing:"0.8px", textTransform:"uppercase",
+                  padding:"3px 10px", borderRadius:6,
+                  background: D ? "rgba(255,255,255,0.06)" : "rgba(99,102,241,0.08)",
+                  color: D ? "#64748b" : "#6366f1",
+                }}>
                   Clause {i + 1}
                 </span>
                 {c.risk && (
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${D ? "bg-red-500/15 text-red-400" : "bg-red-100 text-red-600"}`}>
+                  <span style={{
+                    fontSize:11, fontWeight:700, letterSpacing:"0.5px",
+                    padding:"3px 10px", borderRadius:6,
+                    background:"rgba(239,68,68,0.12)", color:"#f87171",
+                    display:"flex", alignItems:"center", gap:5,
+                    border:"1px solid rgba(239,68,68,0.2)",
+                  }}>
                     ⚠ High Risk
                   </span>
                 )}
               </div>
-              <p className={`text-xs leading-relaxed mb-2 ${D ? "text-gray-500" : "text-gray-400"}`}>
-                <span className={`font-semibold ${D ? "text-gray-400" : "text-gray-500"}`}>Original: </span>
+              <p style={{ fontSize:12, lineHeight:1.6, marginBottom:8, color:textSec }}>
+                <span style={{ fontWeight:600, color:textMid }}>Original: </span>
                 {c.original}
               </p>
-              <p className={`text-sm leading-relaxed font-medium ${D ? "text-gray-200" : "text-gray-800"}`}>
-                <span className={`font-bold ${D ? "text-indigo-400" : "text-indigo-600"}`}>Simple: </span>
+              <p style={{ fontSize:14, lineHeight:1.65, fontWeight:500, color:textPri }}>
+                <span style={{ fontWeight:700, background:"linear-gradient(90deg,#818cf8,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Simple: </span>
                 {c.simple}
               </p>
               {c.risk && (
-                <p className={`mt-2 text-xs leading-relaxed ${D ? "text-red-400" : "text-red-600"}`}>
+                <p style={{ marginTop:10, fontSize:12, lineHeight:1.6, color:"#f87171",
+                  padding:"8px 12px", borderRadius:8, background:"rgba(239,68,68,0.08)", borderLeft:"2px solid rgba(239,68,68,0.4)" }}>
                   ⚠️ {c.explanation}
                 </p>
               )}
@@ -247,100 +350,159 @@ export default function AnalysisPage() {
           ))}
         </div>
 
-        {/* Summary card */}
-        <div className={`rounded-2xl border p-6 ${D ? "bg-indigo-500/[0.06] border-indigo-500/20" : "bg-indigo-50 border-indigo-200"}`}>
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        {/* ── Summary card ── */}
+        <div style={{
+          ...cardStyle({ padding:"28px 32px" }),
+          background: D ? "rgba(99,102,241,0.06)" : "rgba(238,242,255,0.8)",
+          border: D ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(99,102,241,0.18)",
+          boxShadow: D ? "0 0 40px rgba(99,102,241,0.1)" : "0 8px 32px rgba(99,102,241,0.1)",
+        }}>
+          {/* Summary header */}
+          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:16 }}>
             <div>
-              <h3 className={`font-black text-lg ${D ? "text-white" : "text-gray-900"}`}>
+              <h3 style={{ fontWeight:900, fontSize:18, color:textPri, letterSpacing:"-0.3px", margin:0 }}>
                 Document Summary
               </h3>
               {summaryLang.label !== "English" && (
-                <span className="text-xs text-indigo-400 font-medium">· Translated to {summaryLang.label}</span>
+                <span style={{ fontSize:12, color:"#818cf8", fontWeight:500 }}>· Translated to {summaryLang.label}</span>
               )}
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <select value={summaryLang.label}
+            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+              <select
+                value={summaryLang.label}
                 onChange={(e) => { const l = LANGUAGES.find((x) => x.label === e.target.value)!; setSummaryLang(l); }}
-                className={`text-xs rounded-lg px-2 py-1.5 border outline-none cursor-pointer ${D ? "bg-white/[0.08] border-white/[0.12] text-gray-300" : "bg-white border-indigo-200 text-gray-700"}`}>
+                style={{
+                  fontSize:12, borderRadius:10, padding:"6px 10px", outline:"none", cursor:"pointer",
+                  background: D ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.9)",
+                  border: D ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(99,102,241,0.2)",
+                  color: D ? "#cbd5e1" : "#374151",
+                  fontFamily:"inherit",
+                }}
+              >
                 {LANGUAGES.map((l) => <option key={l.label} value={l.label}>{l.label}</option>)}
               </select>
-              <button onClick={speakSummary} disabled={summaryTranslating}
-                className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition ${
-                  summaryPlaying
-                    ? "bg-indigo-500 text-white border-indigo-500"
-                    : D ? "bg-white/[0.08] border-white/[0.12] text-gray-300 hover:bg-white/[0.12]" : "bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-100"
-                }`}>
+              <button
+                onClick={speakSummary}
+                disabled={summaryTranslating}
+                style={{
+                  fontSize:12, padding:"6px 14px", borderRadius:10, cursor:"pointer",
+                  fontWeight:700, fontFamily:"inherit", transition:"all 0.2s",
+                  background: summaryPlaying ? "linear-gradient(135deg,#6366f1,#7c3aed)" : D ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.9)",
+                  border: summaryPlaying ? "1px solid transparent" : D ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(99,102,241,0.2)",
+                  color: summaryPlaying ? "#fff" : D ? "#cbd5e1" : "#4f46e5",
+                  boxShadow: summaryPlaying ? "0 0 16px rgba(99,102,241,0.4)" : "none",
+                }}
+              >
                 {summaryPlaying ? "⏹ Stop" : "🔊 Listen"}
               </button>
             </div>
           </div>
+
           {summaryTranslating
-            ? <p className={`text-sm animate-pulse ${D ? "text-gray-500" : "text-gray-400"}`}>Translating...</p>
-            : <p className={`text-sm leading-relaxed ${D ? "text-gray-300" : "text-gray-700"}`}>{translatedSummary}</p>
+            ? <p style={{ fontSize:13, color:textSec, animation:"pulse 1.5s ease-in-out infinite" }}>Translating...</p>
+            : <p style={{ fontSize:14, lineHeight:1.75, color:textMid }}>{translatedSummary}</p>
           }
+
+          {/* Download button — large CTA style matching screenshot */}
+          <div style={{ display:"flex", justifyContent:"center", marginTop:24 }}>
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/download-pdf");
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "legal-analysis.pdf";
+                a.click();
+              }}
+              style={{
+                padding:"13px 32px", borderRadius:14, border:"none", cursor:"pointer",
+                fontFamily:"inherit", fontWeight:800, fontSize:15, letterSpacing:"0.2px",
+                background:"linear-gradient(135deg,#6366f1 0%,#7c3aed 50%,#06b6d4 100%)",
+                color:"#fff",
+                boxShadow:"0 0 32px rgba(99,102,241,0.45), 0 4px 16px rgba(0,0,0,0.2)",
+                transition:"all 0.2s",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity="0.9"; (e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity="1"; (e.currentTarget as HTMLButtonElement).style.transform="translateY(0)"; }}
+            >
+              ⬇ Download PDF
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* ── Floating chat button (glow style from screenshot) ── */}
       <button
-  onClick={async () => {
-    const res = await fetch("/api/download-pdf");
-    const blob = await res.blob();
-
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "legal-analysis.pdf";
-    a.click();
-  }}
->
-  Download PDF
-</button>
-
-      {/* ── Floating chat button ── */}
-      <button onClick={() => setChatOpen((o) => !o)}
-        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-xl font-bold z-50 transition-all ${
-          chatOpen
-            ? D ? "bg-white/[0.12] text-white border border-white/20" : "bg-gray-200 text-gray-700"
-            : "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:scale-105"
-        }`}>
+        onClick={() => setChatOpen((o) => !o)}
+        style={{
+          position:"fixed", bottom:24, right:24,
+          width:56, height:56, borderRadius:"50%",
+          border: chatOpen ? D ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(99,102,241,0.2)" : "none",
+          cursor:"pointer", fontSize:20, fontWeight:700,
+          background: chatOpen
+            ? D ? "rgba(255,255,255,0.08)" : "rgba(240,244,255,0.9)"
+            : "linear-gradient(135deg,#6366f1,#7c3aed)",
+          color: chatOpen ? D ? "#fff" : "#4f46e5" : "#fff",
+          boxShadow: chatOpen ? "none" : "0 0 32px rgba(99,102,241,0.5), 0 4px 16px rgba(0,0,0,0.25)",
+          transition:"all 0.25s",
+          zIndex:50, display:"flex", alignItems:"center", justifyContent:"center",
+        }}
+        onMouseEnter={e => { if (!chatOpen) (e.currentTarget as HTMLButtonElement).style.transform="scale(1.08)"; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform="scale(1)"; }}
+      >
         {chatOpen ? "✕" : "💬"}
       </button>
 
       {/* ── Chat panel ── */}
       {chatOpen && (
-        <div className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] rounded-2xl border flex flex-col z-50 shadow-2xl overflow-hidden ${D ? "bg-[#0d1426] border-white/[0.1]" : "bg-white border-gray-200"}`}
-          style={{ height: "400px" }}>
-
-          {/* Chat header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 flex-shrink-0">
-            <div className="flex items-center gap-2 mb-2.5">
-              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base">🤖</div>
+        <div style={{
+          position:"fixed", bottom:92, right:24,
+          width:384, maxWidth:"calc(100vw - 2rem)", height:420,
+          borderRadius:20, overflow:"hidden",
+          display:"flex", flexDirection:"column",
+          background: D ? "#0d1426" : "#ffffff",
+          border: D ? "1px solid rgba(255,255,255,0.09)" : "1px solid rgba(99,102,241,0.15)",
+          boxShadow: D ? "0 0 60px rgba(99,102,241,0.2), 0 20px 40px rgba(0,0,0,0.5)" : "0 8px 40px rgba(99,102,241,0.15)",
+          zIndex:50,
+        }}>
+          {/* Chat header — gradient from screenshot */}
+          <div style={{ background:"linear-gradient(135deg,#4f46e5,#7c3aed)", padding:"14px 16px", flexShrink:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:34, height:34, borderRadius:10, background:"rgba(255,255,255,0.18)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🤖</div>
               <div>
-                <p className="font-bold text-sm text-white">LexSimple Assistant</p>
-                <p className="text-xs text-white/60">Powered by AI · Based on your document</p>
+                <p style={{ fontWeight:800, fontSize:14, color:"#fff", margin:0, letterSpacing:"-0.2px" }}>LexSimple Assistant</p>
+                <p style={{ fontSize:11, color:"rgba(255,255,255,0.6)", margin:0 }}>Powered by AI · Based on your document</p>
               </div>
             </div>
-            
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+          <div style={{ flex:1, overflowY:"auto", padding:"16px", display:"flex", flexDirection:"column", gap:12 }}>
             {messages.map((m, i) => (
-              <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start items-end"}`}>
-                <div className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                  m.role === "user"
-                    ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-br-sm"
-                    : D ? "bg-white/[0.07] text-gray-200 rounded-bl-sm border border-white/[0.08]" : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                }`}>
+              <div key={i} style={{ display:"flex", gap:8, justifyContent: m.role === "user" ? "flex-end" : "flex-start", alignItems:"flex-end" }}>
+                <div style={{
+                  maxWidth:"82%", padding:"10px 14px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                  fontSize:13.5, lineHeight:1.55,
+                  background: m.role === "user"
+                    ? "linear-gradient(135deg,#6366f1,#7c3aed)"
+                    : D ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                  color: m.role === "user" ? "#fff" : D ? "#e2e8f0" : "#1e293b",
+                  border: m.role === "user" ? "none" : D ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(99,102,241,0.1)",
+                }}>
                   {m.content}
                 </div>
                 {m.role === "assistant" && (
-                  <button onClick={() => speakChat(m.content, i)}
-                    className={`flex-shrink-0 mb-1 w-7 h-7 rounded-full flex items-center justify-center transition text-sm ${
-                      chatPlaying === i
-                        ? D ? "bg-indigo-500/30 text-indigo-400" : "bg-indigo-100 text-indigo-600"
-                        : D ? "text-gray-600 hover:text-indigo-400 hover:bg-white/[0.06]" : "text-gray-400 hover:text-indigo-500 hover:bg-gray-100"
-                    }`}>
+                  <button
+                    onClick={() => speakChat(m.content, i)}
+                    style={{
+                      flexShrink:0, marginBottom:2, width:28, height:28, borderRadius:"50%",
+                      border:"none", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center",
+                      background: chatPlaying === i ? "rgba(99,102,241,0.25)" : "transparent",
+                      color: chatPlaying === i ? "#818cf8" : D ? "#475569" : "#94a3b8",
+                      transition:"all 0.2s",
+                    }}
+                  >
                     {chatPlaying === i ? "⏹" : "🔊"}
                   </button>
                 )}
@@ -349,69 +511,134 @@ export default function AnalysisPage() {
 
             {/* Typing dots */}
             {chatLoading && (
-              <div className="flex justify-start">
-                <div className={`px-4 py-3 rounded-2xl rounded-bl-sm ${D ? "bg-white/[0.07]" : "bg-gray-100"}`}>
-                  <span className="flex gap-1.5 items-center h-4">
-                    {[0, 150, 300].map((d) => (
-                      <span key={d} className={`w-2 h-2 rounded-full animate-bounce ${D ? "bg-gray-500" : "bg-gray-400"}`}
-                        style={{ animationDelay: `${d}ms` }} />
-                    ))}
-                  </span>
+              <div style={{ display:"flex", justifyContent:"flex-start" }}>
+                <div style={{
+                  padding:"12px 16px", borderRadius:"18px 18px 18px 4px",
+                  background: D ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                  border: D ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(99,102,241,0.1)",
+                  display:"flex", gap:5, alignItems:"center",
+                }}>
+                  {[0, 150, 300].map((d) => (
+                    <span key={d} style={{
+                      width:7, height:7, borderRadius:"50%",
+                      background: D ? "#475569" : "#94a3b8",
+                      animation:"bounce 1s ease-in-out infinite",
+                      animationDelay:`${d}ms`,
+                      display:"inline-block",
+                    }} />
+                  ))}
                 </div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Suggested */}
+          {/* Suggested pills */}
           {messages.length <= 1 && (
-            <div className={`px-4 pb-3 flex flex-wrap gap-2 flex-shrink-0 ${D ? "border-t border-white/[0.06]" : "border-t border-gray-100"} pt-3`}>
+            <div style={{
+              padding:"10px 14px 12px",
+              borderTop: D ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(99,102,241,0.08)",
+              display:"flex", flexWrap:"wrap", gap:7, flexShrink:0,
+            }}>
               {SUGGESTED.map((q) => (
-                <button key={q} onClick={() => sendMessage(q)}
-                  className={`text-xs px-3 py-1.5 rounded-full border font-medium transition ${
-                    D ? "bg-indigo-500/10 border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/20" : "bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100"
-                  }`}>
+                <button
+                  key={q}
+                  onClick={() => sendMessage(q)}
+                  style={{
+                    fontSize:11, padding:"5px 12px", borderRadius:999, cursor:"pointer",
+                    fontFamily:"inherit", fontWeight:600, transition:"all 0.15s",
+                    background: D ? "rgba(99,102,241,0.1)" : "rgba(99,102,241,0.06)",
+                    border: D ? "1px solid rgba(99,102,241,0.25)" : "1px solid rgba(99,102,241,0.15)",
+                    color: D ? "#a5b4fc" : "#4f46e5",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = D ? "rgba(99,102,241,0.2)" : "rgba(99,102,241,0.12)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = D ? "rgba(99,102,241,0.1)" : "rgba(99,102,241,0.06)")}
+                >
                   {q}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Input */}
-          <div className={`p-3 border-t flex gap-2 items-center flex-shrink-0 ${D ? "border-white/[0.08]" : "border-gray-100"}`}>
-            <input type="text" value={input}
+          {/* Input row */}
+          <div style={{
+            padding:"10px 12px",
+            borderTop: D ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(99,102,241,0.08)",
+            display:"flex", gap:8, alignItems:"center", flexShrink:0,
+          }}>
+            <input
+              type="text" value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder={`Ask in ${chatLang.label}...`}
               disabled={chatLoading}
-              className={`flex-1 text-sm rounded-full px-4 py-2 border outline-none transition ${
-                D ? "bg-white/[0.06] border-white/[0.1] text-white placeholder-gray-600 focus:border-indigo-500/50" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-300"
-              }`}
+              style={{
+                flex:1, fontSize:13, borderRadius:999, padding:"8px 16px", outline:"none",
+                fontFamily:"inherit", transition:"border-color 0.2s",
+                background: D ? "rgba(255,255,255,0.05)" : "#f8fafc",
+                border: D ? "1px solid rgba(255,255,255,0.09)" : "1px solid rgba(99,102,241,0.15)",
+                color: D ? "#f1f5f9" : "#0f172a",
+              }}
             />
-            <button onClick={toggleVoice}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition flex-shrink-0 border text-xs font-black ${
-                isListening
-                  ? "bg-red-500 text-white border-red-500 animate-pulse"
-                  : D ? "bg-white/[0.07] border-white/[0.12] text-gray-400 hover:border-indigo-400/50 hover:text-indigo-400" : "bg-gray-50 border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600"
-              }`}>
+            <button
+              onClick={toggleVoice}
+              style={{
+                width:36, height:36, borderRadius:"50%", border:"none", cursor:"pointer",
+                fontSize:12, fontWeight:900, fontFamily:"inherit",
+                background: isListening ? "#ef4444" : D ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                color: isListening ? "#fff" : D ? "#64748b" : "#64748b",
+                border: isListening ? "none" : D ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(99,102,241,0.15)",
+                animation: isListening ? "pulse 1s ease-in-out infinite" : "none",
+                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+                boxShadow: isListening ? "0 0 14px rgba(239,68,68,0.5)" : "none",
+              }}
+            >
               {isListening ? "■" : "MIC"}
             </button>
-            <button onClick={() => sendMessage()} disabled={chatLoading || !input.trim()}
-              className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 disabled:opacity-40 text-white rounded-full flex items-center justify-center transition flex-shrink-0 text-sm">
+            <button
+              onClick={() => sendMessage()}
+              disabled={chatLoading || !input.trim()}
+              style={{
+                width:36, height:36, borderRadius:"50%", border:"none", cursor:"pointer",
+                fontSize:14, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+                background:"linear-gradient(135deg,#6366f1,#7c3aed)",
+                color:"#fff",
+                opacity: chatLoading || !input.trim() ? 0.4 : 1,
+                transition:"all 0.2s",
+                boxShadow: chatLoading || !input.trim() ? "none" : "0 0 14px rgba(99,102,241,0.4)",
+              }}
+            >
               ➤
             </button>
           </div>
 
           {isListening && (
-            <div className="px-4 pb-3 text-center flex-shrink-0">
-              <span className={`text-xs animate-pulse font-medium ${D ? "text-red-400" : "text-red-500"}`}>
+            <div style={{ padding:"0 16px 10px", textAlign:"center", flexShrink:0 }}>
+              <span style={{ fontSize:11, fontWeight:600, color:"#f87171", animation:"pulse 1s ease-in-out infinite" }}>
                 🎙 Listening in {chatLang.label}... click MIC to stop
               </span>
             </div>
           )}
         </div>
       )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
+        input::placeholder { opacity: 0.5; }
+        select option { background: #1e293b; color: #f1f5f9; }
+      `}</style>
     </div>
-    
   );
 }
