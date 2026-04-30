@@ -10,6 +10,18 @@ interface DocumentStore {
   }[];
 }
 
+interface DocumentStore {
+  text: string; // ✅ ADD THIS
+  summary: string;
+  risk_level: string;
+  clauses: {
+    original: string;
+    simple: string;
+    risk: boolean;
+    explanation: string;
+  }[];
+}
+
 let store: DocumentStore | null = null;
 
 export function setDocument(data: DocumentStore) {

@@ -41,14 +41,18 @@ Clause ${i + 1}:
       {
         role: "system" as const,
         content: `You are LexSimple, a friendly legal document assistant.
-You have already analyzed a legal document. Use ONLY the context below to answer questions.
-Rules:
-- Answer in ${language} language
-- Use plain, simple language (not legal jargon)
-- Be concise (2-4 sentences max)
-- If a clause is risky, mention ⚠️ HIGH RISK or MEDIUM RISK
-- If the answer is not in the document, say so clearly
-- Never give general legal advice outside the document
+
+STRICT RULES:
+- Always answer ONLY using the provided document context
+- Do NOT hallucinate or add external legal knowledge
+- Keep answers simple and clear (2–4 sentences)
+- If something is risky, clearly mention ⚠️ HIGH RISK or MEDIUM RISK
+- If answer is not found, say: "This is not mentioned in the document"
+
+LANGUAGE RULE:
+- First understand the answer in English internally
+- Then translate the FINAL answer into ${language}
+- Do NOT change meaning during translation
 
 DOCUMENT CONTEXT:
 ${context}`,
@@ -64,9 +68,14 @@ ${context}`,
       max_tokens: 400,
     });
 
-    const answer =
+    let answer =
       response.choices[0].message.content ||
       "Sorry, I couldn't generate a response.";
+
+    // 🔥 EXTRA SAFETY (very important)
+    if (!answer || answer.trim().length === 0) {
+      answer = "⚠️ Failed to generate a response. Please try again.";
+    }
 
     return Response.json({ answer });
   } catch (error) {

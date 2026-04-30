@@ -65,7 +65,10 @@ ${text}
       );
     }
 
-    setDocument(parsedResult); // ← ADD THIS LINE (stores result for chatbot)
+    setDocument({
+      text,
+      ...parsedResult,
+    }); // ← ADD THIS LINE (stores result for chatbot)
 
     return Response.json({ result: parsedResult });
 
